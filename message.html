@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>giao-还会再见吗燕子</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    #messageForm {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      resize: vertical;
+    }
+
+    #messageList {
+      list-style: none;
+      padding: 0;
+    }
+
+    .message {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .message h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .message p {
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .delete-button {
+      padding: 5px 10px;
+      font-size: 14px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .delete-button:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+<h1>giao-还会再见吗燕子</h1>
+
+<form id="messageForm">
+  <label for="name">随便啦:</label>
+  <input type="text" id="name" required><br>
+
+  <label for="content">留言内容:</label>
+  <textarea id="content" required></textarea><br>
+
+  <button type="submit">提交留言</button>
+</form>
+
+<ul id="messageList"></ul>
+
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
+<script>
+  AV.init({
+    appId: 'h8XKmEvYrXagYVkMxihQDeGN-gzGzoHsz',
+    appKey: 'nVEWqWh2O9b4ba8vXrrAy38s',
+    serverURL: 'https://CtG7HkxxxO3OdLtNru77kmul-gzGzoHsz.lc-cn-n1-shared.com'
+  });
+
+  const Message = AV.Object.extend('Message_Board');
+  const messageForm = document.getElementById('messageForm');
+  const messageList = document.getElementById('messageList');
+
+  // 添加留言
+  messageForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const content = document.getElementById('content').value;
+
+    const message = new Message();
+    message.set('name', name);
+    message.set('content', content);
+
+    try {
+      await message.save();
+      alert('留言提交成功');
+      messageForm.reset();
+      fetchMessageList();
+    } catch (error) {
+      console.log(error);
+      alert('留言提交失败');
+    }
+  });
+
+  // 删除留言
+  function deleteMessage(messageId) {
+    const password = prompt('请输入密码');
+    if (password === 'haihuizaijianmayanzi') { // 将YOUR_PASSWORD替换为您设置的密码
+      const message = AV.Object.createWithoutData('Message_Board', messageId);
+      message.destroy().then(() => {
+        fetchMessageList();
+        alert('留言删除成功');
+      }).catch((error) => {
+        console.log(error);
+        alert('留言删除失败');
+      });
+    } else {
+      alert('密码错误');
+    }
+  }
+
+  // 获取留言列表
+  function fetchMessageList() {
+    const query = new AV.Query('Message_Board');
+    query.descending('createdAt');
+    query.find().then((results) => {
+      messageList.innerHTML = '';
+
+      results.forEach((message) => {
+        const li = document.createElement('li');
+        li.className = 'message';
+        li.innerHTML = `
+          <h3>${message.get('name')}</h3>
+          <p>${message.get('content')}</p>
+          <button class="delete-button" onclick="deleteMessage('${message.id}')">删除</button>
+        `;
+
+        messageList.appendChild(li);
+      });
+    }).catch((error) => {
+      console.log(error);
+      alert('留言列表获取失败');
+    });
+  }
+
+  // 初始化页面
+  fetchMessageList();
+</script>
+</body>
+</html>
